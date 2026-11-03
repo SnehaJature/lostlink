@@ -1,0 +1,3 @@
+package io.lostlink.auth.dto;
+
+public record AuthResponse(String accessToken, String tokenType, long expiresIn, UserResponse user) {}

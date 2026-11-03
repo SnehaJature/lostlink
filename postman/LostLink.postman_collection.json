@@ -1,0 +1,61 @@
+{
+  "info": {
+    "_postman_id": "bc408cf5-9d4c-4e16-a4cc-b75a2d58cd03",
+    "name": "LostLink API",
+    "description": "Two-user demonstration flow. Requests capture access tokens, item IDs, match IDs, and claim IDs from responses. Start the Docker Compose stack first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "tokenA", "value": ""},
+    {"key": "tokenB", "value": ""},
+    {"key": "lostItemId", "value": ""},
+    {"key": "foundItemId", "value": ""},
+    {"key": "matchId", "value": ""},
+    {"key": "claimId", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1. Register User A",
+      "event": [{"listen": "prerequest", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('emailA', `user-a.${Date.now()}@example.com`);"]}}, {"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('tokenA', pm.response.json().accessToken);"]}}],
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/api/v1/auth/register", "body": {"mode": "raw", "raw": "{\"fullName\":\"User A\",\"email\":\"{{emailA}}\",\"password\":\"example-pass-123\"}"}}
+    },
+    {
+      "name": "2. Register User B",
+      "event": [{"listen": "prerequest", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('emailB', `user-b.${Date.now()}@example.com`);"]}}, {"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('tokenB', pm.response.json().accessToken);"]}}],
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/api/v1/auth/register", "body": {"mode": "raw", "raw": "{\"fullName\":\"User B\",\"email\":\"{{emailB}}\",\"password\":\"example-pass-123\"}"}}
+    },
+    {
+      "name": "3. Report LOST item as User A",
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('lostItemId', pm.response.json().id);"]}}],
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenA}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/items", "body": {"mode": "raw", "raw": "{\"title\":\"Black wireless headphones\",\"description\":\"Black over-ear headphones with a blue case\",\"category\":\"ELECTRONICS\",\"itemType\":\"LOST\",\"location\":\"Office Cafeteria\",\"itemDate\":\"2026-11-03\"}"}}
+    },
+    {
+      "name": "4. Report FOUND item as User B",
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('foundItemId', pm.response.json().id);"]}}],
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenB}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/items", "body": {"mode": "raw", "raw": "{\"title\":\"Black wireless headphones\",\"description\":\"Black over-ear headphones with a blue case\",\"category\":\"ELECTRONICS\",\"itemType\":\"FOUND\",\"location\":\"Office Cafeteria\",\"itemDate\":\"2026-11-03\"}"}}
+    },
+    {
+      "name": "5. List User A matches",
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["const matches = pm.response.json();", "if (matches.length) pm.collectionVariables.set('matchId', matches[0].id);"]}}],
+      "request": {"method": "GET", "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenA}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/matches/my-matches"}
+    },
+    {
+      "name": "6. Submit claim as User A",
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.collectionVariables.set('claimId', pm.response.json().id);"]}}],
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenA}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/claims", "body": {"mode": "raw", "raw": "{\"matchId\":\"{{matchId}}\",\"description\":\"I can identify the Bluetooth pairing name.\",\"proofDetails\":\"The device serial and purchase receipt details are available for private verification.\"}"}}
+    },
+    {
+      "name": "7. Review queue as User B",
+      "request": {"method": "GET", "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenB}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/claims/review-queue"}
+    },
+    {
+      "name": "8. Approve claim as User B",
+      "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenB}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/claims/{{claimId}}/status", "body": {"mode": "raw", "raw": "{\"status\":\"APPROVED\"}"}}
+    },
+    {
+      "name": "9. Read User A notifications",
+      "request": {"method": "GET", "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{tokenA}}", "type": "string"}]}, "url": "{{baseUrl}}/api/v1/notifications"}
+    }
+  ]
+}

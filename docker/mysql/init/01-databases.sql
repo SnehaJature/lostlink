@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS item_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS matching_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS claim_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS notification_db CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+GRANT ALL PRIVILEGES ON auth_db.* TO 'lostlink'@'%';
+GRANT ALL PRIVILEGES ON item_db.* TO 'lostlink'@'%';
+GRANT ALL PRIVILEGES ON matching_db.* TO 'lostlink'@'%';
+GRANT ALL PRIVILEGES ON claim_db.* TO 'lostlink'@'%';
+GRANT ALL PRIVILEGES ON notification_db.* TO 'lostlink'@'%';
